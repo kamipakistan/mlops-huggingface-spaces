@@ -1,4 +1,5 @@
 # Building an end-to-end MLOps pipeline with Hugging Face Spaces & GitHub Actions
+<img width="1920" height="1080" alt="Screenshot from 2025-11-20 16-36-20" src="https://github.com/user-attachments/assets/81d1db19-b535-4eae-acaf-30d44d3e3400" />
 
 This repository demonstrates a simple Continuous Deployment (CD) workflow that automatically syncs your GitHub repo to a Hugging Face Space whenever you push changes. The workflow uses GitHub Actions and a Hugging Face access token to push the app files into your Space's Git repository.
 
