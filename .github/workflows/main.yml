@@ -1,23 +1,68 @@
 name: Sync to Hugging Face hub
+
 on:
   push:
-    branches: [main]
-
-  # to run this workflow manually from the Actions tab
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   sync-to-hub:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Add remote 
+
+      - name: Set up Python (optional, useful if you run tests/install deps)
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Configure Git user
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+      - name: Prepare HF space clone (create or update)
         env:
-          HF: ${{ secrets.HF_TOKEN }}
-        run: git remote add space https://kamipakistan:$HF@huggingface.co/spaces/kamipakistan/text_summarization_app
-      - name: Push to hub
-        env:
-          HF: ${{ secrets.HF }}
-        run: git push --force https://kamipakistan:$HF@huggingface.co/spaces/kamipakistan/text_summarization_app main
+          HF_USERNAME: kamipakistan
+          HF_SPACE: text_summarization_app
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          set -e
+
+          HF_REMOTE="https://huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE}.git"
+          echo "HF remote: ${HF_USERNAME}/${HF_SPACE}"
+
+          # Try to clone the remote space into directory `hf-space`. If it doesn't exist, create empty dir and init git.
+          rm -rf hf-space
+          git clone --depth=1 "${HF_REMOTE}" hf-space || {
+            echo "Remote Space not found or empty — initializing new repo directory"
+            mkdir -p hf-space
+            cd hf-space
+            git init
+            git remote add origin "${HF_REMOTE}"
+            cd ..
+          }
+
+          # Copy current repo contents into hf-space, excluding .git
+          rsync -av --delete --exclude='.git' ./ hf-space/
+
+          cd hf-space
+
+          # Show status for debugging (safe - token not printed)
+          git status --porcelain || true
+
+          git add -A
+          # Only create a commit if there are changes
+          if ! git diff --cached --quiet; then
+            git commit -m "Sync from GitHub Actions: ${GITHUB_SHA}"
+          else
+            echo "No changes to commit."
+          fi
+
+          # Push using token-authenticated HTTPS URL. GitHub Actions masks secrets in logs.
+          PUSH_URL="https://${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE}.git"
+          git push "${PUSH_URL}" HEAD:main --force
