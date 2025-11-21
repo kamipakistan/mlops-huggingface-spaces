@@ -1,3 +1,17 @@
+
+---
+title: Text Summarization App
+emoji: 📝
+colorFrom: blue
+colorTo: indigo
+sdk: gradio
+sdk_version: 5.0.0
+app_file: app.py
+pinned: false
+license: apache-2.0
+---
+
+
 # Building an end-to-end MLOps pipeline with Hugging Face Spaces & GitHub Actions
 
 This repository demonstrates a simple Continuous Deployment (CD) workflow that automatically syncs your GitHub repo to a Hugging Face Space whenever you push changes. The workflow uses GitHub Actions and a Hugging Face access token to push the app files into your Space's Git repository.
