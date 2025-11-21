@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python (optional, useful if you run tests/install deps)
+      - name: Set up Python (optional)
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
@@ -32,12 +32,13 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           set -e
-
           HF_REMOTE="https://huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE}.git"
           echo "HF remote: ${HF_USERNAME}/${HF_SPACE}"
 
-          # Try to clone the remote space into directory `hf-space`. If it doesn't exist, create empty dir and init git.
+          # Clean old clone
           rm -rf hf-space
+
+          # Try to clone remote; if empty or missing, init a new repo
           git clone --depth=1 "${HF_REMOTE}" hf-space || {
             echo "Remote Space not found or empty — initializing new repo directory"
             mkdir -p hf-space
@@ -47,22 +48,19 @@ jobs:
             cd ..
           }
 
-          # Copy current repo contents into hf-space, excluding .git
-          rsync -av --delete --exclude='.git' ./ hf-space/
+          # Copy current repo contents into hf-space, excluding .git and the hf-space dir itself
+          rsync -av --delete --exclude='.git' --exclude='hf-space' ./ hf-space/
 
           cd hf-space
-
-          # Show status for debugging (safe - token not printed)
           git status --porcelain || true
 
           git add -A
-          # Only create a commit if there are changes
           if ! git diff --cached --quiet; then
             git commit -m "Sync from GitHub Actions: ${GITHUB_SHA}"
           else
             echo "No changes to commit."
           fi
 
-          # Push using token-authenticated HTTPS URL. GitHub Actions masks secrets in logs.
+          # Push using token-authenticated HTTPS URL
           PUSH_URL="https://${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE}.git"
           git push "${PUSH_URL}" HEAD:main --force
