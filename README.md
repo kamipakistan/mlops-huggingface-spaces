@@ -66,5 +66,25 @@ Create the file: `.github/workflows/sync-to-hf-space.yml`
 * The workflow clones the remote Space, copies your repo files into it, commits, and pushes. `--force` is used to ensure the remote matches the GitHub repo — remove if you prefer a safer merging strategy.
 * You can adjust which branch the workflow pushes to on the Space (here it goes to `main`).
 
+## Minimal repository layout (recommended).
+```
+├── .github/
+│   └── workflows/
+│       └── sync-to-hf-space.yml
+├── app.py
+├── Makefile
+├── requirements.txt
+├── README.md
+└── src/               # optional module code
+```
+**`requirements.txt:`**
+
+```
+gradio         # or streamlit if using Streamlit
+transformers
+tensorflow
+```
+
+
 
 
