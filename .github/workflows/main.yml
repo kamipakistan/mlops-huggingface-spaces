@@ -1,66 +1,43 @@
-name: Sync to Hugging Face hub
+name: Deploy to Hugging Face Space
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
-  sync-to-hub:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set up Python (optional)
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: '3.10'
 
-      - name: Configure Git user
+      - name: Install git-lfs
+        run: |
+          curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+          sudo apt-get update
+          sudo apt-get install -y git-lfs
+          git lfs install
+
+      - name: Configure git
         run: |
           git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
+          git config --global user.name "github-actions"
 
-      - name: Prepare HF space clone (create or update)
+      - name: Push to Hugging Face Space
         env:
-          HF_USERNAME: kamipakistan
-          HF_SPACE: text_summarization_app
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: "kamipakistan"
+          HF_SPACE: "text_summarization_app"
         run: |
           set -e
-          HF_REMOTE="https://huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE}.git"
-          echo "HF remote: ${HF_USERNAME}/${HF_SPACE}"
-
-          # Clean old clone
-          rm -rf hf-space
-
-          # Try to clone remote; if empty or missing, init a new repo
-          git clone --depth=1 "${HF_REMOTE}" hf-space || {
-            echo "Remote Space not found or empty — initializing new repo directory"
-            mkdir -p hf-space
-            cd hf-space
-            git init
-            git remote add origin "${HF_REMOTE}"
-            cd ..
-          }
-
-          # Copy current repo contents into hf-space, excluding .git and the hf-space dir itself
-          rsync -av --delete --exclude='.git' --exclude='hf-space' ./ hf-space/
-
-          cd hf-space
-          git status --porcelain || true
-
-          git add -A
-          if ! git diff --cached --quiet; then
-            git commit -m "Sync from GitHub Actions: ${GITHUB_SHA}"
-          else
-            echo "No changes to commit."
-          fi
-
-          # Push using token-authenticated HTTPS URL
-          PUSH_URL="https://${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE}.git"
-          git push "${PUSH_URL}" HEAD:main --force
+          HF_REPO="https://${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE}"
+          # Add remote if not present
+          git remote add hf $HF_REPO || true
+          # Push all files including LFS objects
+          git push --force hf HEAD:main
