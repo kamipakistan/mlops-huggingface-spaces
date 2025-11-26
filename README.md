@@ -11,6 +11,9 @@ license: cc
 ---
 
 
+[![Sync to Hugging Face hub](https://github.com/kamipakistan/mlops-huggingface-spaces/actions/workflows/main.yml/badge.svg)](https://github.com/kamipakistan/mlops-huggingface-spaces/actions/workflows/main.yml)
+
+
 # Building an end-to-end MLOps pipeline with Hugging Face Spaces & GitHub Actions
 
 This repository demonstrates a simple Continuous Deployment (CD) workflow that automatically syncs your GitHub repo to a Hugging Face Space whenever you push changes. The workflow uses GitHub Actions and a Hugging Face access token to push the app files into your Space's Git repository.
