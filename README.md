@@ -228,7 +228,6 @@ jobs:
 ## Advanced improvements (next steps)
 - Use a smaller CPU-efficient model and pin model name in code.
 - Add tests and a GitHub Actions job for unit tests.
-- Add a badge in the README showing GitHub Actions status.
 - Use a workflow that only deploys when a `deploy` label is added (protect HF Space from accidental deploys).
 
 ---
