@@ -13,6 +13,9 @@ license: cc
 
 [![Sync to Hugging Face hub](https://github.com/kamipakistan/mlops-huggingface-spaces/actions/workflows/main.yml/badge.svg)](https://github.com/kamipakistan/mlops-huggingface-spaces/actions/workflows/main.yml)
 
+## Live Demo
+
+You can try the app online here: [Text Summarization App](https://huggingface.co/spaces/kamipakistan/text_summarization_app)
 
 # Building an end-to-end MLOps pipeline with Hugging Face Spaces & GitHub Actions
 
